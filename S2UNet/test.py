@@ -4,8 +4,11 @@ import torch
 from PIL import Image
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from dataset import MyDataset
-from network.total_module import RetinexUnfoldingNetUnsupervised_Test
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from S2UNet.dataset import MyDataset
+from S2UNet.network.total_module import RetinexUnfoldingNetUnsupervised_Test
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

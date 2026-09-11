@@ -37,8 +37,7 @@ class MyDataset(data.Dataset):
             pil_label = pil_label.convert("RGB")
             label = self.transforms(pil_label)
             return data, label, img_name, label_name
-
-        return data, _, img_name, _
+        return data, "", img_name, ""
 
     def __len__(self):
         return len(self.imgs)
