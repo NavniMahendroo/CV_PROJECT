@@ -32,8 +32,7 @@ class Trainer:
         os.makedirs(config.save_dir, exist_ok=True)
         
         self.model = RetinexUnfoldingNetUnsupervised(
-            num_steps=config.num_steps, 
-            gamma=config.gamma
+            num_steps=config.num_steps
         ).to(device)
         
         self.criterion = S2UNetLoss(num_steps=config.num_steps).to(device)
@@ -60,15 +59,16 @@ class Trainer:
             for batch_idx, (I_l, _, _, _) in enumerate(progress_bar):
                 I_l = I_l.to(device)
                 
-                # Algorithm 1, Step 1: Gamma correction
-                I_n = torch.pow(I_l, self.config.gamma)
+                self.optimizer.zero_grad()
+                
+                # Algorithm 1, Step 1: Predict Spatial Gamma Map
+                gamma_map = self.model.gamma_predictor(I_l)
+                I_n = torch.pow(I_l, gamma_map)
                 
                 # Algorithm 1, Step 2: Poisson noise injection (Eq. 9)
                 s = self.config.noise_scale
                 I_l_noisy = torch.poisson(I_l.clamp(min=1e-6, max=1.0) * s) / s
                 I_n_noisy = torch.poisson(I_n.clamp(min=1e-6, max=1.0) * s) / s
-                
-                self.optimizer.zero_grad()
                 
                 # Algorithm 1, Steps 3-4: Forward pass
                 # ID module receives noisy inputs; UF module uses clean I_l, I_n
